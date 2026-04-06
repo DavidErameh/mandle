@@ -1,0 +1,190 @@
+{
+  "version": "1.0",
+  "prompts": {
+    "brand_voice": {
+      "path": "prompts/brand/brand_voice.md",
+      "category": "brand",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "brand_rules": {
+      "path": "prompts/brand/brand_rules.md",
+      "category": "brand",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "niche_context": {
+      "path": "prompts/brand/niche_context.md",
+      "category": "brand",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "offer_context": {
+      "path": "prompts/brand/offer_context.md",
+      "category": "brand",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "extractor_system": {
+      "path": "prompts/system/extractor_system.md",
+      "category": "system",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "generator_system": {
+      "path": "prompts/system/generator_system.md",
+      "category": "system",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "reviewer_system": {
+      "path": "prompts/system/reviewer_system.md",
+      "category": "system",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "reply_system": {
+      "path": "prompts/system/reply_system.md",
+      "category": "system",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "hook_templates": {
+      "path": "prompts/hooks/hook_templates.md",
+      "category": "hooks",
+      "required": true,
+      "selection": "model_selects",
+      "last_updated": "2026-04-06"
+    },
+    "hook_examples": {
+      "path": "prompts/hooks/hook_examples.md",
+      "category": "hooks",
+      "required": false,
+      "selection": "always_include",
+      "last_updated": "2026-04-06"
+    },
+    "format_templates": {
+      "path": "prompts/formats/format_templates.md",
+      "category": "formats",
+      "required": true,
+      "selection": "model_selects",
+      "last_updated": "2026-04-06"
+    },
+    "format_guidelines": {
+      "path": "prompts/formats/format_guidelines.md",
+      "category": "formats",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "writing_guidelines": {
+      "path": "prompts/guidelines/writing_guidelines.md",
+      "category": "guidelines",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "structuring_guide": {
+      "path": "prompts/guidelines/structuring_guide.md",
+      "category": "guidelines",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "cta_patterns": {
+      "path": "prompts/guidelines/cta_patterns.md",
+      "category": "guidelines",
+      "required": true,
+      "last_updated": "2026-04-06"
+    },
+    "user_stories": {
+      "path": "prompts/examples/user_stories.md",
+      "category": "examples",
+      "required": false,
+      "selection": "random",
+      "sample_count": 2,
+      "last_updated": "2026-04-06"
+    },
+    "best_posts": {
+      "path": "prompts/examples/best_posts.md",
+      "category": "examples",
+      "required": false,
+      "selection": "random",
+      "sample_count": 2,
+      "last_updated": "2026-04-06"
+    },
+    "bad_examples": {
+      "path": "prompts/examples/bad_examples.md",
+      "category": "examples",
+      "required": true,
+      "last_updated": "2026-04-06"
+    }
+  },
+  "assembly_recipes": {
+    "extraction": [
+      "extractor_system",
+      "niche_context",
+      "offer_context"
+    ],
+    "generation": [
+      "generator_system",
+      "brand_voice",
+      "brand_rules",
+      "hook_templates",
+      "hook_examples",
+      "format_templates",
+      "format_guidelines",
+      "writing_guidelines",
+      "structuring_guide",
+      "cta_patterns",
+      "user_stories",
+      "best_posts"
+    ],
+    "review": [
+      "reviewer_system",
+      "brand_voice",
+      "brand_rules",
+      "bad_examples"
+    ],
+    "reply": [
+      "reply_system",
+      "brand_voice",
+      "brand_rules",
+      "cta_patterns"
+    ]
+  },
+  "feed_sources": [
+    {
+      "name": "Hacker News",
+      "type": "rss",
+      "url": "https://news.ycombinator.com/rss",
+      "fetch_interval_minutes": 60,
+      "notes": "Filter for dev tools, reverse engineering, indie hacker stories"
+    },
+    {
+      "name": "Indie Hackers",
+      "type": "rss",
+      "url": "https://www.indiehackers.com/feed.rss",
+      "fetch_interval_minutes": 120,
+      "notes": "Build-in-public stories, revenue milestones, product launches"
+    },
+    {
+      "name": "The Pragmatic Engineer",
+      "type": "rss",
+      "url": "https://newsletter.pragmaticengineer.com/feed",
+      "fetch_interval_minutes": 1440,
+      "notes": "Deep engineering analysis — good for contrarian takes and technical depth"
+    },
+    {
+      "name": "Dev.to",
+      "type": "rss",
+      "url": "https://dev.to/feed",
+      "fetch_interval_minutes": 60,
+      "notes": "Community dev content — filter for tools, reverse engineering, builds"
+    },
+    {
+      "name": "Levels.io Blog",
+      "type": "rss",
+      "url": "https://levels.io/rss/",
+      "fetch_interval_minutes": 1440,
+      "notes": "Indie maker content — build in public, solo dev philosophy"
+    }
+  ]
+}

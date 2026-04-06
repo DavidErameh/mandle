@@ -1,0 +1,38 @@
+[project]
+name = "mandle-backend"
+version = "1.0.0"
+description = "Mandle - X Content Automation System Backend"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.135.1",
+    "uvicorn>=0.41.0",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.0.0",
+    "convex>=1.0.0",
+    "groq>=0.8.0",
+    "feedparser>=6.0.0",
+    "youtube-transcript-api>=0.6.0",
+    "google-api-python-client>=2.0.0",
+    "tweepy>=4.0.0",
+    "cloudinary>=1.40.0",
+    "apscheduler>=4.0.0",
+    "httpx>=0.27.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python-version = "3.13"
