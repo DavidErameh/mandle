@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     timezone: str = Field(default="Africa/Lagos")
     min_post_gap_minutes: int = Field(default=30)
     min_reply_engagement: int = Field(default=5)
+    manual_source_id: str = Field(default="")
 
     def get_prompts_path(self) -> Path:
         """Get the prompts directory as an absolute path."""

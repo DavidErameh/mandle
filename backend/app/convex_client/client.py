@@ -50,6 +50,8 @@ class ConvexClientWrapper:
             The result from the Convex function.
         """
         client = self._get_client()
+        if kwargs and not args:
+            return client.query(function_name, kwargs)
         return client.query(function_name, *args, **kwargs)
 
     def mutation(self, function_name: str, *args: Any, **kwargs: Any) -> Any:
@@ -65,6 +67,8 @@ class ConvexClientWrapper:
             The result from the Convex function.
         """
         client = self._get_client()
+        if kwargs and not args:
+            return client.mutation(function_name, kwargs)
         return client.mutation(function_name, *args, **kwargs)
 
     @property

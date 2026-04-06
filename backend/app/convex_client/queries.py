@@ -76,6 +76,11 @@ def update_feed_last_fetched(id: str, last_fetched_at: int) -> None:
     get_client().mutation("feeds:updateLastFetched", id=id, lastFetchedAt=last_fetched_at)
 
 
+def get_manual_source_id() -> Optional[str]:
+    """Get the Convex ID of the static Manual Import feedSource."""
+    return get_client().query("feeds:getManualSourceId")
+
+
 # ============================================================================
 # RAW ITEMS
 # ============================================================================
@@ -90,17 +95,22 @@ def create_raw_item(
     external_id: str,
     title: str,
     raw_text: str,
-    published_at: int
+    published_at: int,
+    import_note: Optional[str] = None
 ) -> Any:
     """Create a new raw item."""
-    return get_client().mutation(
-        "rawItems:create",
-        sourceId=source_id,
-        externalId=external_id,
-        title=title,
-        rawText=raw_text,
-        publishedAt=published_at
-    )
+    from datetime import datetime, timezone
+    args = {
+        "sourceId": source_id,
+        "externalId": external_id,
+        "title": title,
+        "rawText": raw_text,
+        "publishedAt": published_at,
+        "ingestedAt": int(datetime.now(timezone.utc).timestamp() * 1000)
+    }
+    if import_note is not None:
+        args["importNote"] = import_note
+    return get_client().mutation("rawItems:create", **args)
 
 
 def mark_item_processed(id: str) -> None:
@@ -116,6 +126,11 @@ def get_items_by_source(source_id: str) -> list[dict[str, Any]]:
 def get_item_by_external_id(external_id: str) -> Optional[dict[str, Any]]:
     """Get a raw item by external ID."""
     return get_client().query("rawItems:getByExternalId", externalId=external_id)
+
+
+def raw_item_exists_by_external_id(external_id: str) -> bool:
+    """Check if a raw item with this externalId already exists."""
+    return get_client().query("rawItems:existsByExternalId", externalId=external_id)
 
 
 # ============================================================================

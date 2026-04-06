@@ -12,8 +12,8 @@ from fastapi.security import APIKeyHeader
 
 from app.config import get_settings
 from app.convex_client import queries
-from app.models.api_models import RawItemResponse, ExtractedPointResponse
-from app.services import generator_service
+from app.models.api_models import RawItemResponse, ExtractedPointResponse, ImportRequest, ImportResponse, ImportItemResult
+from app.services import generator_service, ingestion_service
 
 
 logger = logging.getLogger(__name__)
@@ -62,6 +62,32 @@ async def list_raw_items(
 
     paginated = raw_items[offset : offset + limit]
     return [RawItemResponse(**item) for item in paginated]
+
+
+@router.post("/import", response_model=ImportResponse)
+async def quick_import(
+    request: ImportRequest,
+    api_key: str = Depends(verify_api_key),
+) -> ImportResponse:
+    """
+    Import one or more URLs or X thread text into the pipeline.
+    Each URL is processed concurrently. Per-item errors are returned
+    in the response — the endpoint always returns 200.
+    """
+    results = await ingestion_service.run_quick_import(
+        urls=request.urls,
+        x_text=request.x_text,
+        note=request.note,
+    )
+
+    items = [ImportItemResult(**r.model_dump()) for r in results]
+
+    return ImportResponse(
+        results=items,
+        success_count=sum(1 for r in items if r.status == "success"),
+        failed_count=sum(1 for r in items if r.status == "failed"),
+        duplicate_count=sum(1 for r in items if r.status == "duplicate"),
+    )
 
 
 @router.get("/points")

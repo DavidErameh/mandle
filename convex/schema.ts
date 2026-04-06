@@ -7,7 +7,12 @@ export default defineSchema({
 
   feedSources: defineTable({
     name: v.string(),
-    type: v.union(v.literal("rss"), v.literal("youtube")),
+    type: v.union(
+      v.literal("rss"),
+      v.literal("youtube_channel"),
+      v.literal("youtube_video"),
+      v.literal("manual")
+    ),
     url: v.string(),
     isActive: v.boolean(),
     lastFetchedAt: v.optional(v.number()), // epoch ms
@@ -25,6 +30,7 @@ export default defineSchema({
     publishedAt: v.number(), // epoch ms
     ingestedAt: v.number(), // epoch ms
     processed: v.boolean(), // Has extraction run on this?
+    importNote: v.optional(v.string()),
   })
     .index("by_processed", ["processed"])
     .index("by_sourceId", ["sourceId"])

@@ -26,6 +26,7 @@ export const create = mutation({
     rawText: v.string(),
     publishedAt: v.number(),
     ingestedAt: v.number(),
+    importNote: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.insert("rawItems", {
@@ -36,6 +37,7 @@ export const create = mutation({
       publishedAt: args.publishedAt,
       ingestedAt: args.ingestedAt,
       processed: false,
+      ...(args.importNote ? { importNote: args.importNote } : {}),
     });
   },
 });
@@ -64,5 +66,16 @@ export const getByExternalId = query({
       .query("rawItems")
       .withIndex("by_externalId", (q) => q.eq("externalId", args.externalId))
       .first();
+  },
+});
+
+export const existsByExternalId = query({
+  args: { externalId: v.string() },
+  handler: async (ctx, args) => {
+    const item = await ctx.db
+      .query("rawItems")
+      .withIndex("by_externalId", (q) => q.eq("externalId", args.externalId))
+      .first();
+    return item !== null;
   },
 });

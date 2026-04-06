@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface ExtractedPoint {
   id: string;
@@ -159,14 +160,22 @@ export default function InspirePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1
-          className="text-2xl font-bold text-white"
-          style={{ fontFamily: '"Bambino New", sans-serif' }}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1
+            className="text-2xl font-bold text-white"
+            style={{ fontFamily: '"Bambino New", sans-serif' }}
+          >
+            Inspiration Feed
+          </h1>
+          <p className="text-[#8B98A5]">Browse raw items and extracted points</p>
+        </div>
+        <Link
+          href="/inspire/import"
+          className="text-sm text-[#8B98A5] hover:text-white border border-[#FFFFFF1A] hover:bg-[#1C1F26] px-3 py-1.5 rounded-full transition-colors"
         >
-          Inspiration Feed
-        </h1>
-        <p className="text-[#8B98A5]">Browse raw items and extracted points</p>
+          + Import content
+        </Link>
       </div>
 
       <div className="flex flex-wrap gap-4 items-center">
