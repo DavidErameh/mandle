@@ -6,7 +6,7 @@
  */
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-const API_KEY = process.env.INTERNAL_API_KEY || "";
+const API_KEY = process.env.NEXT_PUBLIC_INTERNAL_API_KEY || "";
 
 async function fetchApi<T>(
   endpoint: string,

@@ -82,7 +82,9 @@ class ExtractedPointResponse(BaseModel):
     id: str
     raw_item_id: str = Field(alias="rawItemId")
     text: str
-    point_type: str = Field(alias="type", description="Type: idea, quote, data, or story")
+    point_type: str = Field(alias="type", description="Type: mechanism, intersection, data, failure, gap, translation, or contrarian")
+    source_lens: Optional[str] = Field(default=None, alias="sourceLens", description="Lens: trending_tech, design_craft, raw_practitioner, unfiltered_opinion, or general")
+    translation_path: Optional[str] = Field(default=None, alias="translationPath")
     relevance_score: int = Field(alias="relevanceScore", ge=1, le=10, description="Relevance score 1-10")
     suggested_angle: str = Field(alias="suggestedAngle")
     used_in_generation: bool = Field(alias="usedInGeneration")

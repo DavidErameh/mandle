@@ -9,6 +9,7 @@ from this module rather than calling raw Convex function strings.
 from typing import Any, Optional
 
 from .client import get_client
+from app.utils.helpers import utc_now
 
 
 # ============================================================================
@@ -147,7 +148,9 @@ def create_point(
     text: str,
     point_type: str,
     relevance_score: int,
-    suggested_angle: str
+    suggested_angle: str,
+    source_lens: Optional[str] = None,
+    translation_path: Optional[str] = None
 ) -> Any:
     """Create a new extracted point."""
     return get_client().mutation(
@@ -156,7 +159,10 @@ def create_point(
         text=text,
         type=point_type,
         relevanceScore=relevance_score,
-        suggestedAngle=suggested_angle
+        suggestedAngle=suggested_angle,
+        sourceLens=source_lens,
+        translationPath=translation_path,
+        createdAt=int(utc_now().timestamp() * 1000)
     )
 
 

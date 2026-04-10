@@ -103,9 +103,11 @@ async def _extract_points(raw_item: dict[str, Any]) -> int:
 {truncated_text}
 
 Return a JSON array of extracted points, each with:
-- text: The extracted text
-- type: "idea", "quote", "data", or "story"
+- text: The extracted text (1-3 sentences)
+- type: "mechanism" | "intersection" | "data" | "failure" | "gap" | "translation" | "contrarian"
+- source_lens: "trending_tech" | "design_craft" | "raw_practitioner" | "unfiltered_opinion" | "general"
 - relevance_score: 1-10 (only include 7+)
+- translation_path: One sentence describing the connection to Dave's window
 - suggested_angle: A suggested content angle for this point
 """
 
@@ -133,14 +135,21 @@ Return a JSON array of extracted points, each with:
 
     stored_count = 0
     for point in points:
-        relevance = point.get("relevanceScore", point.get("relevance_score", 0))
+        relevance_val = point.get("relevance_score", point.get("relevanceScore", 0))
+        try:
+            relevance = int(relevance_val)
+        except (ValueError, TypeError):
+            relevance = 0
+
         if relevance < 7:
             logger.debug(f"Skipping point with relevance {relevance} (< 7)")
             continue
 
         text = point.get("text", "")
-        point_type = point.get("type", "idea")
-        angle = point.get("suggestedAngle", point.get("suggested_angle", ""))
+        point_type = point.get("type", "mechanism")
+        angle = point.get("suggested_angle", point.get("suggestedAngle", ""))
+        source_lens = point.get("source_lens", point.get("sourceLens", "general"))
+        translation_path = point.get("translation_path", point.get("translationPath", ""))
 
         if not text:
             continue
@@ -152,6 +161,8 @@ Return a JSON array of extracted points, each with:
                 point_type=point_type,
                 relevance_score=int(relevance),
                 suggested_angle=angle,
+                source_lens=source_lens,
+                translation_path=translation_path,
             )
             stored_count += 1
         except Exception as e:

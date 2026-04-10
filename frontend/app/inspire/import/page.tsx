@@ -25,16 +25,22 @@ export default function QuickImportPage() {
   const [results, setResults] = useState<ImportResponse | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (urls: string[], xText: string | null, note: string | null) => {
+  const handleSubmit = async (
+    urls: string[],
+    xText: string | null,
+    note: string | null,
+  ) => {
     setIsSubmitting(true);
     setResults(null);
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
     try {
-      const response = await fetch("/api/v1/inspire/import", {
+      const response = await fetch(`${API_URL}/api/v1/inspire/import`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "X-API-Key": process.env.NEXT_PUBLIC_API_KEY ?? "",
+          "X-API-Key": process.env.NEXT_PUBLIC_INTERNAL_API_KEY ?? "",
         },
         body: JSON.stringify({
           urls,
@@ -54,14 +60,21 @@ export default function QuickImportPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <Link href="/inspire" className="text-sm text-[#8B98A5] hover:text-white">
+        <Link
+          href="/inspire"
+          className="text-sm text-[#8B98A5] hover:text-white"
+        >
           ← Inspiration
         </Link>
-        <h1 className="text-2xl font-bold text-white mt-2"
-            style={{ fontFamily: '"Bambino New", sans-serif' }}>
+        <h1
+          className="text-2xl font-bold text-white mt-2"
+          style={{ fontFamily: '"Bambino New", sans-serif' }}
+        >
           Quick Import
         </h1>
-        <p className="text-[#8B98A5] text-sm">Paste content into your pipeline</p>
+        <p className="text-[#8B98A5] text-sm">
+          Paste content into your pipeline
+        </p>
       </div>
 
       <ImportForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />

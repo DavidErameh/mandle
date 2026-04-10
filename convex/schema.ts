@@ -43,11 +43,22 @@ export default defineSchema({
     rawItemId: v.id("rawItems"),
     text: v.string(),
     type: v.union(
-      v.literal("idea"),
-      v.literal("quote"),
+      v.literal("mechanism"),
+      v.literal("intersection"),
       v.literal("data"),
-      v.literal("story"),
+      v.literal("failure"),
+      v.literal("gap"),
+      v.literal("translation"),
+      v.literal("contrarian")
     ),
+    sourceLens: v.optional(v.union(
+      v.literal("trending_tech"),
+      v.literal("design_craft"),
+      v.literal("raw_practitioner"),
+      v.literal("unfiltered_opinion"),
+      v.literal("general")
+    )),
+    translationPath: v.optional(v.string()),
     relevanceScore: v.number(), // 1–10, assigned by extractor model
     suggestedAngle: v.string(), // Model's suggested content angle
     usedInGeneration: v.boolean(), // Has generation been triggered?
