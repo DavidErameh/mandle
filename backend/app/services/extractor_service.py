@@ -208,3 +208,33 @@ async def run_extraction() -> dict[str, Any]:
     )
 
     return {"processed": processed_count, "points_extracted": total_points}
+
+
+async def extract_from_raw_item(raw_item: dict[str, Any]) -> list[dict[str, Any]]:
+    """
+    Extract points from a single raw item.
+    Used for immediate extraction after manual import.
+
+    Returns:
+        List of extracted point dicts with their IDs.
+    """
+    logger.info(f"Extracting from raw item: {raw_item.get('id')}")
+
+    try:
+        points_count = await _extract_points(raw_item)
+        
+        if points_count > 0:
+            queries.mark_item_processed(raw_item.get("id"))
+
+        # Get the created points
+        point_id = raw_item.get("id")
+        points = queries.get_points_by_score(1)
+        # Filter points by this raw item
+        extracted = [p for p in points if p.get("rawItemId") == point_id]
+        
+        logger.info(f"Extracted {len(extracted)} points from raw item {raw_item.get('id')}")
+        return extracted
+
+    except Exception as e:
+        logger.error(f"Failed to extract from raw item {raw_item.get('id')}: {e}")
+        return []

@@ -53,7 +53,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.api import feeds, inspire, content, queue, media, replies, targets
+from app.api import feeds, inspire, content, queue, media, replies, targets, pipeline
 
 app.include_router(feeds.router, prefix="/api/v1")
 app.include_router(inspire.router, prefix="/api/v1")
@@ -62,6 +62,7 @@ app.include_router(queue.router, prefix="/api/v1")
 app.include_router(media.router, prefix="/api/v1")
 app.include_router(replies.router, prefix="/api/v1")
 app.include_router(targets.router, prefix="/api/v1")
+app.include_router(pipeline.router, prefix="/api/v1")
 
 
 @app.get("/api/v1/prompts/registry")

@@ -14,8 +14,17 @@ interface ImportItemResult {
   reason: string | null;
 }
 
+interface DraftPreview {
+  variation_id: string;
+  content_text: string;
+  hook_used: string;
+  format_used: string;
+  char_count: number;
+}
+
 interface ImportResponse {
   results: ImportItemResult[];
+  generated_drafts: DraftPreview[];
   success_count: number;
   failed_count: number;
   duplicate_count: number;
@@ -80,6 +89,45 @@ export default function QuickImportPage() {
       <ImportForm onSubmit={handleSubmit} isSubmitting={isSubmitting} />
 
       {results && <ImportResults data={results} />}
+
+      {results &&
+        results.generated_drafts &&
+        results.generated_drafts.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-white">
+              Generated Drafts
+            </h2>
+            <p className="text-sm text-[#8B98A5]">
+              {results.generated_drafts.length} drafts generated. Review and
+              approve them on the{" "}
+              <Link href="/review" className="text-[#1D9BF0] hover:underline">
+                Review page
+              </Link>
+              .
+            </p>
+            <div className="space-y-3">
+              {results.generated_drafts.map((draft, idx) => (
+                <div
+                  key={idx}
+                  className="bg-[#16181C] border border-[#FFFFFF1A] rounded-lg p-4"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs text-[#8B98A5] font-mono">
+                      {draft.variation_id}
+                    </span>
+                    <span className="text-xs text-[#536471]">
+                      {draft.hook_used} • {draft.format_used} •{" "}
+                      {draft.char_count} chars
+                    </span>
+                  </div>
+                  <p className="text-sm text-white whitespace-pre-wrap">
+                    {draft.content_text}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
     </div>
   );
 }

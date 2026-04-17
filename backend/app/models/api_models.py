@@ -6,9 +6,9 @@ They mirror the Convex schema but are separate from it.
 """
 
 from datetime import datetime
-from typing import Optional, Any
+from typing import Optional, Any, Literal
 
-from pydantic import BaseModel, Field, field_validator, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 # ============================================================================
@@ -314,8 +314,6 @@ class PaginatedResponse(BaseModel):
 # ============================================================================
 
 
-from typing import Literal
-
 class ImportResult(BaseModel):
     """Result of importing a single item via Quick Import."""
     input: str
@@ -372,47 +370,19 @@ class ImportResponse(BaseModel):
     duplicate_count: int
 
 
-class ImportRequest(BaseModel):
-    """Request body for POST /api/v1/inspire/import."""
-    urls: list[str] = []
-    x_text: Optional[str] = None
-    note: Optional[str] = None
-
-    @field_validator("urls")
-    @classmethod
-    def validate_urls(cls, v: list[str]) -> list[str]:
-        if len(v) > 10:
-            raise ValueError("Maximum 10 URLs per request.")
-        for url in v:
-            if not url.startswith(("http://", "https://")):
-                raise ValueError(f"Invalid URL: {url}")
-        return v
-
-    @field_validator("x_text")
-    @classmethod
-    def validate_x_text(cls, v: Optional[str]) -> Optional[str]:
-        if v is not None and len(v.strip()) < 20:
-            raise ValueError("X text must be at least 20 characters.")
-        return v
-
-    def model_post_init(self, __context) -> None:
-        if not self.urls and not self.x_text:
-            raise ValueError("At least one of 'urls' or 'x_text' must be provided.")
+class DraftPreview(BaseModel):
+    """Preview of a generated draft."""
+    variation_id: str
+    content_text: str
+    hook_used: str
+    format_used: str
+    char_count: int
 
 
-class ImportItemResult(BaseModel):
-    """Result for a single imported item."""
-    input: str
-    status: Literal["success", "failed", "duplicate"]
-    raw_item_id: Optional[str] = None
-    title: Optional[str] = None
-    type: Optional[Literal["youtube_video", "article", "x_thread"]] = None
-    reason: Optional[str] = None
-
-
-class ImportResponse(BaseModel):
-    """Response body for POST /api/v1/inspire/import."""
+class ImportResponseWithDrafts(BaseModel):
+    """Response body for POST /api/v1/inspire/import with generated drafts."""
     results: list[ImportItemResult]
+    generated_drafts: list[DraftPreview]
     success_count: int
     failed_count: int
     duplicate_count: int

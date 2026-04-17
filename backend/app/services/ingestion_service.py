@@ -21,7 +21,8 @@ from pydantic import BaseModel
 from app.config import get_settings
 from app.convex_client import queries
 from app.utils.helpers import utc_now
-from app.models.api_models import ImportResult
+from app.models.api_models import ImportResult, DraftPreview
+from app.services import extractor_service, generator_service
 
 logger = logging.getLogger(__name__)
 
@@ -226,10 +227,17 @@ def _extract_channel_id(url: str) -> Optional[str]:
 
 
 def _extract_video_id_from_url(url: str) -> str:
-    """Extract video id from the watch url."""
+    """Extract video id from YouTube URLs (both formats)."""
+    # Handle youtube.com/watch?v= format
     match = re.search(r"youtube\.com/watch\?v=([a-zA-Z0-9_-]{11})", url)
     if match:
         return match.group(1)
+    
+    # Handle youtu.be/ format
+    match = re.search(r"youtu\.be/([a-zA-Z0-9_-]{11})", url)
+    if match:
+        return match.group(1)
+    
     return ""
 
 
@@ -512,8 +520,19 @@ async def _safe_import(fn, input_val: str, note: str | None) -> ImportResult:
         )
 
 
-async def run_quick_import(urls: list[str], x_text: str | None, note: str | None) -> list[ImportResult]:
-    """Orchestrate Quick Import."""
+async def run_quick_import(urls: list[str], x_text: str | None, note: str | None, auto_generate: bool = True) -> tuple[list[ImportResult], list[DraftPreview]]:
+    """
+    Orchestrate Quick Import.
+    
+    Args:
+        urls: List of URLs to import
+        x_text: Raw X thread text
+        note: Optional note for all items
+        auto_generate: If True, run extraction + generation immediately
+    
+    Returns:
+        Tuple of (import_results, generated_drafts)
+    """
     tasks = []
 
     for url in urls:
@@ -529,7 +548,71 @@ async def run_quick_import(urls: list[str], x_text: str | None, note: str | None
         tasks.append(asyncio.create_task(_safe_import(import_x_text, x_text, note)))
 
     if not tasks:
-        return []
+        return ([], [])
 
     results = await asyncio.gather(*tasks)
-    return list(results)
+    import_results = list(results)
+
+    # If auto_generate is True, run extraction + generation on newly imported items
+    generated_drafts = []
+    if auto_generate:
+        for result in import_results:
+            if result.status == "success" and result.raw_item_id:
+                try:
+                    drafts = await _generate_from_raw_item(result.raw_item_id)
+                    generated_drafts.extend(drafts)
+                except Exception as e:
+                    logger.error(f"Failed to generate from raw item {result.raw_item_id}: {e}")
+
+    return (import_results, generated_drafts)
+
+
+async def _generate_from_raw_item(raw_item_id: str) -> list[DraftPreview]:
+    """
+    Extract points from a raw item and generate drafts.
+    Returns list of generated draft previews.
+    """
+    # Get the raw item
+    raw_items = queries.get_items_by_source(queries.get_manual_source_id() or "")
+    raw_item = next((item for item in raw_items if item.get("id") == raw_item_id), None)
+    
+    if not raw_item:
+        # Try getting from any source
+        all_items = queries.get_unprocessed_items()
+        raw_item = next((item for item in all_items if item.get("id") == raw_item_id), None)
+    
+    if not raw_item:
+        return []
+
+    # Extract points from this raw item
+    points = await extractor_service.extract_from_raw_item(raw_item)
+    
+    if not points:
+        return []
+
+    # Generate drafts from extracted points
+    point_ids = [p.get("id") for p in points if p.get("id")]
+    if not point_ids:
+        return []
+
+    result = await generator_service.generate_from_points(point_ids)
+    
+    drafts_created = result.get("drafts_created", 0)
+    
+    # Get the created drafts
+    all_drafts = []
+    for point_id in point_ids:
+        drafts = queries.get_drafts_by_point(point_id)
+        all_drafts.extend(drafts)
+
+    # Convert to DraftPreview
+    return [
+        DraftPreview(
+            variation_id=f"v{d.get('variationNumber', 1)}",
+            content_text=d.get("contentText", ""),
+            hook_used=d.get("hookUsed", ""),
+            format_used=d.get("formatUsed", ""),
+            char_count=d.get("charCount", 0),
+        )
+        for d in all_drafts
+    ]

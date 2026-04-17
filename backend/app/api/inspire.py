@@ -12,8 +12,8 @@ from fastapi.security import APIKeyHeader
 
 from app.config import get_settings
 from app.convex_client import queries
-from app.models.api_models import RawItemResponse, ExtractedPointResponse, ImportRequest, ImportResponse, ImportItemResult
-from app.services import generator_service, ingestion_service
+from app.models.api_models import RawItemResponse, ExtractedPointResponse, ImportRequest, ImportResponse, ImportItemResult, ImportResponseWithDrafts, DraftPreview
+from app.services import generator_service, ingestion_service, extractor_service
 
 
 logger = logging.getLogger(__name__)
@@ -64,26 +64,32 @@ async def list_raw_items(
     return [RawItemResponse(**item) for item in paginated]
 
 
-@router.post("/import", response_model=ImportResponse)
+@router.post("/import", response_model=ImportResponseWithDrafts)
 async def quick_import(
     request: ImportRequest,
     api_key: str = Depends(verify_api_key),
-) -> ImportResponse:
+) -> ImportResponseWithDrafts:
     """
     Import one or more URLs or X thread text into the pipeline.
     Each URL is processed concurrently. Per-item errors are returned
     in the response — the endpoint always returns 200.
+    
+    When import succeeds, extraction and generation run immediately
+    and generated drafts are returned in the response.
     """
-    results = await ingestion_service.run_quick_import(
+    import_results, generated_drafts = await ingestion_service.run_quick_import(
         urls=request.urls,
         x_text=request.x_text,
         note=request.note,
+        auto_generate=True,
     )
 
-    items = [ImportItemResult(**r.model_dump()) for r in results]
+    items = [ImportItemResult(**r.model_dump()) for r in import_results]
+    drafts = [DraftPreview(**d.model_dump()) for d in generated_drafts]
 
-    return ImportResponse(
+    return ImportResponseWithDrafts(
         results=items,
+        generated_drafts=drafts,
         success_count=sum(1 for r in items if r.status == "success"),
         failed_count=sum(1 for r in items if r.status == "failed"),
         duplicate_count=sum(1 for r in items if r.status == "duplicate"),
